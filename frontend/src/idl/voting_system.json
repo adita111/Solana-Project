@@ -1,0 +1,107 @@
+{
+  "address": "CC6Hgbp1fGRXf1zj8gi3j5GyfrRwC1aTRnVvhP5oGLWe",
+  "metadata": {
+    "name": "voting_system",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "cast_vote",
+      "discriminator": [
+        20,
+        212,
+        15,
+        189,
+        69,
+        180,
+        69,
+        151
+      ],
+      "accounts": [
+        {
+          "name": "vote_account",
+          "writable": true
+        },
+        {
+          "name": "voter",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "vote_account",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "VoteAccount",
+      "discriminator": [
+        203,
+        238,
+        154,
+        106,
+        200,
+        131,
+        0,
+        41
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "AlreadyVoted",
+      "msg": "Acest wallet a votat deja."
+    }
+  ],
+  "types": [
+    {
+      "name": "VoteAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "total_votes",
+            "type": "u64"
+          },
+          {
+            "name": "voters",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
