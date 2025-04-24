@@ -1,60 +1,91 @@
+import { Buffer } from "buffer";
+window.Buffer = Buffer;
+
 import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
-import { AnchorProvider, Program, web3 } from "@coral-xyz/anchor";
+import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import idl from "./idl/voting_system.json";
 
-
-
-const programID = new PublicKey("CC6Hgbp1fGRXf1zj8gi3j5GyfrRwC1aTRnVvhP5oGLWe"); // Adresa programului tău
+// Program ID luat din IDL
+const programID = new PublicKey(idl.address);
+// Conectare la Devnet
 const network = clusterApiUrl("devnet");
-const opts = {
-  preflightCommitment: "processed",
+const connection = new Connection(network, "processed");
+
+// Creează un provider Anchor din Phantom wallet
+function getProvider() {
+  if (window.solana && window.solana.isPhantom) {
+    return new AnchorProvider(connection, window.solana, AnchorProvider.defaultOptions());
+  }
+  throw new Error("Phantom Wallet nu este instalat");
+}
+
+// Buton Connect Wallet
+document.getElementById("connectWalletBtn").onclick = async () => {
+  try {
+    const resp = await window.solana.connect();
+    console.log("✅ Wallet conectat:", resp.publicKey.toString());
+  } catch (err) {
+    console.error("❌ Eroare conectare wallet:", err);
+  }
 };
 
-let provider;
-let program;
+// Buton “Deconectează Wallet”
+document.getElementById("disconnectWalletBtn").onclick = async () => {
+  try {
+    await window.solana.disconnect();
+    console.log("✅ Wallet deconectat");
+  } catch (err) {
+    console.error("❌ Eroare la deconectarea walletului:", err);
+  }
+}
 
-window.addEventListener("DOMContentLoaded", async () => {
-  const connectBtn = document.getElementById("connectWalletBtn");
-  const voteBtn = document.getElementById("voteBtn");
+// Buton Initialize VoteAccount
+document.getElementById("initBtn").onclick = async () => {
+  const provider = getProvider();
+  const program = new Program(idl, provider);
 
-  connectBtn.addEventListener("click", async () => {
-    try {
-      const resp = await window.solana.connect();
-      console.log("✅ Wallet conectat:", resp.publicKey.toString());
-      provider = new AnchorProvider(new Connection(network, opts.preflightCommitment), window.solana, opts);
-      program = new Program(idl, programID, provider);
-    } catch (err) {
-      console.error("❌ Eroare la conectarea walletului:", err);
-    }
-  });
+  // PDA derivat folosind seed-ul "vote"
+  const [voteAccountPDA] = PublicKey.findProgramAddressSync(
+    [Buffer.from("vote")],
+    program.programId
+  );
 
-  voteBtn.addEventListener("click", async () => {
-    if (!program || !provider) {
-      alert("Conectează walletul întâi!");
-      return;
-    }
+  try {
+    await program.methods
+      .initialize()
+      .accounts({
+        voteAccount: voteAccountPDA,
+        user: provider.wallet.publicKey,
+        systemProgram: PublicKey.default, 
+      })
+      .rpc();
+    console.log("✅ Cont VoteAccount inițializat:", voteAccountPDA.toBase58());
+  } catch (err) {
+    console.error("❌ Eroare la initialize:", err);
+  }
+};
 
-    const user = provider.wallet.publicKey;
-    const voteOption = document.getElementById("votOption").value === "Da";
+// Buton Cast Vote
+document.getElementById("voteBtn").onclick = async () => {
+  const provider = getProvider();
+  const program = new Program(idl, programID, provider);
 
-    const [voteAccountPDA] = await web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("votare"), user.toBuffer()],
-      programID
-    );
+  // Derivare PDA aceeași ca la initialize
+  const [voteAccountPDA] = PublicKey.findProgramAddressSync(
+    [Buffer.from("vote")],
+    program.programId
+  );
 
-    try {
-      const tx = await program.methods
-        .vote(voteOption)
-        .accounts({
-          voter: user,
-          voteAccount: voteAccountPDA,
-          systemProgram: web3.SystemProgram.programId,
-        })
-        .rpc();
-
-      console.log("✅ Vot trimis cu succes! TX:", tx);
-    } catch (err) {
-      console.error("❌ Eroare la trimiterea votului:", err);
-    }
-  });
-});
+  try {
+    await program.methods
+      .castVote()
+      .accounts({
+        voteAccount: voteAccountPDA,
+        voter: provider.wallet.publicKey,
+      })
+      .rpc();
+    console.log("✅ A votat cu succes pe:", voteAccountPDA.toBase58());
+  } catch (err) {
+    console.error("❌ Eroare la castVote:", err);
+  }
+};

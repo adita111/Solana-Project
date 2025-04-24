@@ -22,7 +22,20 @@
       "accounts": [
         {
           "name": "vote_account",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  111,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "voter",
@@ -47,7 +60,19 @@
         {
           "name": "vote_account",
           "writable": true,
-          "signer": true
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  111,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "user",

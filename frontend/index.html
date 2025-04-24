@@ -3,20 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <title>Voting System</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    button { padding: 0.5rem 1rem; margin: 0.5rem; }
+  </style>
 </head>
 <body>
-  <h1>Votează cu wallet-ul</h1>
-  <button id="connectWalletBtn">Conectează wallet</button>
-  <br /><br />
+  <h1>Voting System</h1>
 
-  <label for="votOption">Alege opțiunea:</label>
-  <select id="votOption">
-    <option value="Da">Da</option>
-    <option value="Nu">Nu</option>
-  </select>
-  <br /><br />
+  <!-- Conectare wallet -->
+  <button id="connectWalletBtn">Conectează Wallet</button>
+
+  
+  <button id="disconnectWalletBtn">Deconectează Wallet</button><br />
+
+  <!-- Inițializare cont de vot -->
+  <button id="initBtn">Initializează votul</button>
+
+  <!-- Cast vote -->
   <button id="voteBtn">Trimite Votul</button>
 
+  <!-- Mesaje de status -->
+  <div id="status"></div>
+
+  <!-- Scriptul principal -->
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
